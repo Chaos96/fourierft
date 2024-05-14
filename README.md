@@ -7,7 +7,7 @@ This is the official implementation for the following paper:
 *ICML 2024*
 
 ## Update progress
-GLUE and image classification parts have been added.
+NLU (GLUE) and image classification parts have been added.
 
 ## Dependencies
 
