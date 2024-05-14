@@ -1,5 +1,3 @@
-# Under construction (this will be completed very soon!)
-
 This is the official implementation for the following paper:
 
 [Parameter-Efficient Fine-Tuning with Discrete Fourier Transform](https://arxiv.org/abs/2405.03003)
@@ -7,6 +5,9 @@ This is the official implementation for the following paper:
 *Ziqi Gao^, Qichao Wang^, Aochuan Chen^, Zijing Liu, Bingzhe Wu, Liang Chen, Jia Li**
 
 *ICML 2024*
+
+## Update progress
+GLUE and image classification parts have been added.
 
 ## Dependencies
 
