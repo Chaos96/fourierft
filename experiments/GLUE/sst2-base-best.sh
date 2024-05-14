@@ -1,0 +1,13 @@
+CUDA_VISIBLE_DEVICES=0 python NLU_GLUE.py \
+    --model_name_or_path roberta-base \
+    --dataset sst2 \
+    --task sst2 \
+    --n_frequency 1000 \
+    --max_length 512 \
+    --head_lr 0.006 \
+    --fft_lr 0.05 \
+    --num_epoch 40 \
+    --bs 32  \
+    --scale 140.0 \
+    --seed 0 \
+    --share_entry

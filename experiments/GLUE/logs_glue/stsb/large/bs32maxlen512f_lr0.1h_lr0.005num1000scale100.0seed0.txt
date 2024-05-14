@@ -1,0 +1,1 @@
+epoch 0: {'pearson': 0.2880640672329949, 'spearmanr': 0.2746206572460696} , current_best_pearson: 0.2880640672329949 train_loss: 1.962959885597229

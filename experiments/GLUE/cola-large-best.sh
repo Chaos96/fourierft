@@ -1,0 +1,13 @@
+CUDA_VISIBLE_DEVICES=0 python NLU_GLUE.py \
+    --model_name_or_path roberta-large \
+    --dataset cola \
+    --task cola \
+    --n_frequency 1000 \
+    --max_length 256 \
+    --head_lr 0.011 \
+    --fft_lr 0.043 \
+    --num_epoch 80 \
+    --bs 128  \
+    --scale 120.0 \
+    --seed 0 \
+    --share_entry
