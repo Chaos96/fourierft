@@ -12,4 +12,4 @@ Dependencies
 
 ```cd ./peft-fourier```
 ```pip install -e .```
-```pip install datasets scipy scikit-learn evaluate```
+```pip install datasets scipy scikit-learn evaluate pillow torchvision optuna```
