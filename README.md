@@ -8,8 +8,8 @@ This is the official implementation for the following paper:
 
 *ICML 2024*
 
-Dependencies
+## Dependencies
 
-```cd ./peft-fourier```
-```pip install -e .```
-```pip install datasets scipy scikit-learn evaluate pillow torchvision optuna```
+1. ```cd ./peft-fourier```
+2. ```pip install -e .```
+3. ```pip install datasets scipy scikit-learn evaluate pillow torchvision optuna```
