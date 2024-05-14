@@ -13,3 +13,7 @@ This is the official implementation for the following paper:
 1. ```cd ./peft-fourier```
 2. ```pip install -e .```
 3. ```pip install datasets scipy scikit-learn evaluate pillow torchvision optuna```
+
+## Run
+
+Please kindly move to ```./experiments``` for the specific tasks.
