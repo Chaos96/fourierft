@@ -6,6 +6,8 @@ This is the official implementation for the following paper:
 
 *ICML 2024*
 
+> The `peft` folder is a fork from huggingface's repository, which can be found [peft](https://github.com/huggingface/peft).
+
 ## Update progress
 NLU (GLUE) and image classification parts have been added.
 
