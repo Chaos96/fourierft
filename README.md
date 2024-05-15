@@ -13,7 +13,7 @@ NLU (GLUE) and image classification parts have been added.
 
 ## Dependencies
 
-1. ```cd ./peft-fourier```
+1. ```cd ./peft```
 2. ```pip install -e .```
 3. ```pip install datasets scipy scikit-learn evaluate pillow torchvision optuna```
 
