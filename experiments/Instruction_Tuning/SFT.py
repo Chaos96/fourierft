@@ -13,7 +13,7 @@ from torch.utils.data import Dataset
 from transformers import Trainer
 
 from peft import PeftModel, FourierConfig, TaskType, get_peft_model
-from datasets import load_dataset, train_test_split
+from datasets import load_dataset
 
 
 IGNORE_INDEX = -100
@@ -219,7 +219,8 @@ class DataCollatorForSupervisedDataset(object):
 
 def make_supervised_data_module(tokenizer: transformers.PreTrainedTokenizer, data_args) -> Dict:
     """Make dataset and collator for supervised fine-tuning."""
-    dataset = load_dataset(data_args.data_name_or_path, "train").train_test_split(train_size=0.8)
+    # dataset = load_dataset(data_args.data_name_or_path, "train").train_test_split(train_size=0.8)
+    dataset = load_dataset(data_args.data_name_or_path)['train'].train_test_split(train_size=0.8)
     train_set, eval_set = dataset['train'], dataset['test']
     train_dataset = SupervisedDataset(raw_data=train_set, tokenizer=tokenizer, data_args=data_args)
     eval_dataset = SupervisedDataset(raw_data=eval_set, tokenizer=tokenizer, data_args=data_args)
@@ -269,7 +270,7 @@ def train():
         fourier_config = FourierConfig(
             task_type=task_type,
             inference_mode=False,
-            n_frequency=training_args.num_frequency,
+            n_frequency=training_args.n_frequency,
             scale=training_args.scale
         )
         model = get_peft_model(model, fourier_config)
