@@ -13,7 +13,7 @@ This is the official implementation for the following paper:
 
 1. ```cd ./peft```
 2. ```pip install -e .```
-3. ```pip install datasets scipy scikit-learn evaluate pillow torchvision optuna```
+3. ```pip install datasets scipy scikit-learn evaluate pillow torchvision optuna wandb```
 
 ## Run
 
