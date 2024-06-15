@@ -58,7 +58,7 @@ class DataArguments:
         metadata={"help": "Dataset tag or path to dataset."}
     )
     data_name_or_path: str = field(
-        default="yahma/alpaca-cleaned",
+        default="/apdcephfs_qy3/share_1594716/bingzhe/dataset/alpaca-cleaned",
         metadata={"help": "Dataset name."}
     )
 
@@ -72,7 +72,7 @@ class TrainingArguments(transformers.TrainingArguments):
     adam_epsilon: float = field(default=1e-8)
     max_grad_norm: float = field(default=1.0)
     model_max_length: Optional[int] = field(default=512, metadata={"help": "Input sequence length"})
-    per_device_train_batch_size: int = field(default=8)
+    per_device_train_batch_size: int = field(default=1)
     per_device_eval_batch_size: int = field(default=8)
     gradient_accumulation_steps: int = field(default=1)
     num_train_epochs: Optional[int] = field(default=3, metadata={"help": "the number of training epochs"})
@@ -233,13 +233,13 @@ def train():
     parser = transformers.HfArgumentParser((ModelArguments, DataArguments, TrainingArguments))
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
     
-    os.environ["WANDB_NAME"] = training_args.run_name
 
     if model_args.full_precision:
         model = transformers.AutoModelForCausalLM.from_pretrained(
             model_args.model_name_or_path,
             low_cpu_mem_usage=True,
-            torch_dtype=torch.bfloat16
+            torch_dtype=torch.bfloat16,
+            device_map="auto"
         )
     else:
         model = transformers.AutoModelForCausalLM.from_pretrained(

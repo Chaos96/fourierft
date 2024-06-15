@@ -340,10 +340,14 @@ class Linear(nn.Module, FourierLayer):
                 # delta_w = torch.fft.ifft2(torch.sparse_coo_tensor(indices, spectrum, [self.in_features, self.in_features],  
                                             # dtype=spectrum.dtype, device=spectrum.device).to_dense()).real * scale
 
-                dense_s = torch.zeros((self.in_features, self.in_features),dtype=spectrum.dtype,device='cuda')
+                dense_s = torch.zeros((self.in_features, self.in_features), dtype=spectrum.dtype, device='cuda')
                 dense_s[indices[0, :], indices[1, :]] = spectrum
+            
+                if spectrum.dtype == torch.bfloat16:
+                    dense_s = dense_s.to(torch.float16)
+
                 delta_w = torch.fft.ifft2(dense_s).real * scale
-                x = x.to(spectrum.dtype)
+                x, delta_w = x.to(spectrum.dtype), delta_w.to(spectrum.dtype)
                 result += torch.einsum('ijk,kl->ijl', x, delta_w)
 
         result = result.to(previous_dtype)

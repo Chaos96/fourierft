@@ -34,13 +34,13 @@ if is_bnb_available():
             base_layer: torch.nn.Module,
             adapter_name: str,
             n_frequency: int = 0,
-            init_lora_weights: bool = True,
+            init_fourier_weights: bool = True,
             **kwargs,
         ) -> None:
             super().__init__()
             FourierLayer.__init__(self, base_layer)
 
-            self.update_layer(adapter_name, n_frequency, init_lora_weights)
+            self.update_layer(adapter_name, n_frequency, init_fourier_weights)
 
         def merge(self, safe_merge: bool = False, adapter_names: Optional[List[str]] = None) -> None:
             """
@@ -65,12 +65,12 @@ if is_bnb_available():
                 adapter_names = self.active_adapters
 
             for active_adapter in adapter_names:
-                if active_adapter not in self.lora_A.keys():
+                if active_adapter not in self.fourier_A.keys():
                     continue
                 warnings.warn(
-                    "Merge lora module to 8-bit linear may get different generations due to rounding errors."
+                    "Merge fourier module to 8-bit linear may get different generations due to rounding errors."
                 )
-                lora_data = self.get_delta_weight(active_adapter)
+                fourier_data = self.get_delta_weight(active_adapter)
 
                 weight = self.get_base_layer().weight
                 state = self.get_base_layer().state
@@ -87,7 +87,7 @@ if is_bnb_available():
                 out32, Sout32 = bnb.functional.igemmlt(im, state.CxB, Sim, state.SB)
                 output = bnb.functional.mm_dequant(out32, Sout32, SCim, state.SCB, bias=None).t()
 
-                w_data = output.to(lora_data.dtype).to(lora_data.device) + lora_data
+                w_data = output.to(fourier_data.dtype).to(fourier_data.device) + fourier_data
                 if safe_merge and not torch.isfinite(w_data).all():
                     raise ValueError(
                         f"NaNs detected in the merged weights. The adapter {active_adapter} seems to be broken"
@@ -112,9 +112,9 @@ if is_bnb_available():
                 if active_adapter not in self.spectrum.keys():
                     continue
                 warnings.warn(
-                    "Unmerge lora module to 8-bit linear may get different generations due to rounding errors."
+                    "Unmerge fourier module to 8-bit linear may get different generations due to rounding errors."
                 )
-                lora_data = self.get_delta_weight(active_adapter)
+                fourier_data = self.get_delta_weight(active_adapter)
 
                 weight = self.get_base_layer().weight
                 state = self.get_base_layer().state
@@ -129,7 +129,7 @@ if is_bnb_available():
                 out32, Sout32 = bnb.functional.igemmlt(im, state.CxB, Sim, state.SB)
                 output = bnb.functional.mm_dequant(out32, Sout32, SCim, state.SCB, bias=None).t()
 
-                w_data = output.to(lora_data.dtype).to(lora_data.device) - lora_data
+                w_data = output.to(fourier_data.dtype).to(fourier_data.device) - fourier_data
                 self.get_base_layer().weight = bnb.nn.Int8Params(
                     w_data.to("cpu"), requires_grad=False, has_fp16_weights=weight.has_fp16_weights
                 ).to(weight.device)
@@ -138,7 +138,7 @@ if is_bnb_available():
         def get_delta_weight(self, adapter):
             return (
                 transpose(
-                    self.lora_B[adapter].weight @ self.lora_A[adapter].weight,
+                    self.fourier_B[adapter].weight @ self.fourier_A[adapter].weight,
                     False,
                 )
                 * self.scaling[adapter]
@@ -154,20 +154,20 @@ if is_bnb_available():
             else:
                 result = self.base_layer(x, *args, **kwargs)
                 for active_adapter in self.active_adapters:
-                    if active_adapter not in self.lora_A.keys():
+                    if active_adapter not in self.fourier_A.keys():
                         continue
-                    lora_A = self.lora_A[active_adapter]
-                    lora_B = self.lora_B[active_adapter]
-                    dropout = self.lora_dropout[active_adapter]
+                    fourier_A = self.fourier_A[active_adapter]
+                    fourier_B = self.fourier_B[active_adapter]
+                    dropout = self.fourier_dropout[active_adapter]
                     scaling = self.scaling[active_adapter]
 
                     requires_conversion = not torch.is_autocast_enabled()
                     if requires_conversion:
                         expected_dtype = result.dtype
-                        compute_dtype = lora_A.weight.dtype
+                        compute_dtype = fourier_A.weight.dtype
                         if x.dtype != compute_dtype:
                             x = x.to(compute_dtype)
-                    output = lora_B(lora_A(dropout(x)))
+                    output = fourier_B(fourier_A(dropout(x)))
                     if requires_conversion:
                         output = output.to(expected_dtype)
                     output = output * scaling
@@ -177,7 +177,7 @@ if is_bnb_available():
 
         def __repr__(self) -> str:
             rep = super().__repr__()
-            return "lora." + rep
+            return "fourier." + rep
 
 
 if is_bnb_4bit_available():
@@ -189,15 +189,15 @@ if is_bnb_4bit_available():
             base_layer: torch.nn.Module,
             adapter_name: str,
             r: int = 0,
-            lora_alpha: int = 1,
-            lora_dropout: float = 0.0,
-            init_lora_weights: bool = True,
+            fourier_alpha: int = 1,
+            fourier_dropout: float = 0.0,
+            init_fourier_weights: bool = True,
             **kwargs,
         ) -> None:
             super().__init__()
             FourierLayer.__init__(self, base_layer)
 
-            self.update_layer(adapter_name, r, lora_alpha, lora_dropout, init_lora_weights)
+            self.update_layer(adapter_name, r, fourier_alpha, fourier_dropout, init_fourier_weights)
 
         def merge(self, safe_merge: bool = False, adapter_names: Optional[List[str]] = None) -> None:
             """
@@ -222,15 +222,15 @@ if is_bnb_4bit_available():
                 adapter_names = self.active_adapters
 
             for active_adapter in adapter_names:
-                if active_adapter not in self.lora_A.keys():
+                if active_adapter not in self.fourier_A.keys():
                     continue
                 warnings.warn(
-                    "Merge lora module to 4-bit linear may get different generations due to rounding errors."
+                    "Merge fourier module to 4-bit linear may get different generations due to rounding errors."
                 )
                 # Refer to https://gist.github.com/ChrisHayduk/1a53463331f52dca205e55982baf9930
                 weight = self.get_base_layer().weight
                 kwargs = weight.__dict__
-                lora_data = self.get_delta_weight(active_adapter)
+                fourier_data = self.get_delta_weight(active_adapter)
 
                 w_data = bnb.functional.dequantize_4bit(weight.data, weight.quant_state) + lora_data
                 if safe_merge and not torch.isfinite(w_data).all():
